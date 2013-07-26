@@ -10,15 +10,17 @@
 
 WAVEFORMATEX *pHeader;
 
-//void hideSecretMessage(BYTE *ptr) {
+void hideSecretMessage(BYTE *data) {
     
-//}
+    
+    printf("inside function\n");
+}
 
 int writeChunkHeader(FILE *fptr, W_CHUNK *pChunk) {
     int y;
 
     // size = 1, count = 8 bytes
-	y = (int) fwrite(pChunk, 1, 8, fptr);
+    y = (int) fwrite(pChunk, 1, 8, fptr);
 	if(y != 8) return(FAILURE);
 
 	return(SUCCESS);
@@ -173,8 +175,10 @@ int main(int argc, char *argv[])
 		if(pChunkData[cnt] == NULL) return 1;
         writeChunkData(fptrOut, pChunkData[cnt], chunk[cnt].chunkSize);
 
-		if(memcmp( &(chunk[cnt].chunkID), "data", 4) == 0)
-			dataFlag = cnt;	// if find data chunk, take note
+		if(memcmp( &(chunk[cnt].chunkID), "data", 4) == 0) {
+		    dataFlag = cnt;	// if find data chunk, take note
+		    printf("Found data before fmt\n");
+        }
 
 		if(memcmp( &(chunk[cnt].chunkID), "fmt ", 4) == 0)
 		{
@@ -224,10 +228,10 @@ int main(int argc, char *argv[])
 			// read in chunk data
 			pChunkData[cnt] = readChunkData(fptr, chunk[cnt].chunkSize);
 			if(pChunkData[cnt] == NULL) return 1;
-            writeChunkData(fptrOut, pChunkData[cnt], chunk[cnt].chunkSize);
 
 			if(memcmp( &(chunk[cnt].chunkID), "data", 4) == 0)
 			{
+                printf("Found data after fmt\n");
 				dataFlag = cnt;	// found data chunk
 				break;
 			}
@@ -243,9 +247,13 @@ int main(int argc, char *argv[])
 	// ask me any other questions
 	// the web page should answer others
 
+    printf("Initiating Hiding of Message\n");
+    hideSecretMessage(pChunkData[dataFlag]);
+    printf("Message Hidden, writing out data\n");
+    writeChunkData(fptrOut, pChunkData[cnt], chunk[cnt].chunkSize);
+
 	printf("\n");
 
 	fclose(fptr);
 	return 0;
 } // main
-
